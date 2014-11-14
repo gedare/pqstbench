@@ -1,0 +1,22 @@
+# Copyright 2014 Gedare Bloom (gedare@rtems.org)
+#
+# This file's license is 2-clause BSD as in this distribution's LICENSE.2 file.
+#
+
+import rtems_waf.rtems as rtems
+
+def build(bld):
+    rtems.build(bld)
+
+    cflags = bld.get_env()['CFLAGS']
+
+    bld.includes = ['.', '../shared']
+    bld.shared_sources = '../shared/init.c ../shared/workload.c',
+
+    bld(features = 'c cprogram',
+        target = 'mskiplist.exe',
+	includes = bld.includes,
+	cflags = cflags,
+        source = bld.shared_sources + 'pqbench.c mskiplist.c')
+
+
