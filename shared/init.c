@@ -110,27 +110,27 @@ rtems_task PQ_Workload_Task(rtems_task_argument argument)
   /* initialize PQ structures */
   initialize(argument - 1);
 
+  /* TODO: use a proper barrier if more than one task */
+
   /* Barrier: tasks will be released by the init function */
   status = rtems_semaphore_obtain(tasks_complete_sem, RTEMS_DEFAULT_OPTIONS, 0);
+
+  // FIXME: insert timer call pre-warmup
   
   /* reach PQ steady state */
   warmup(argument - 1);
-
-#ifdef DOMEASURE
-  rtems_task_wake_after( 5 );
-#endif
-  // FIXME: how to reset stats for warmup phase?
+  
+  // FIXME: insert timer call post-warmup, pre-work
 
   /* workload */
   work(argument - 1);
+  
+  // FIXME: insert timer call post-work
 
   status = rtems_semaphore_obtain(tasks_complete_sem, RTEMS_DEFAULT_OPTIONS, 0);
   directive_failed( status, "rtems_semaphore_obtain" );
     tasks_completed++;
     if (NUM_APERIODIC_TASKS == tasks_completed) {
-#ifdef WARMUP
-      MAGIC_BREAKPOINT;
-#endif
       puts( "*** END OF TEST ***" );
       rtems_test_exit(0);
     }
@@ -220,7 +220,7 @@ rtems_task Init(
 
   status = rtems_task_create(
       cacheTask_name,
-      200, /* FIXME */
+      200, /* arbitrary priority */
       RTEMS_MINIMUM_STACK_SIZE,
   #if defined(GAB_TIMESLICE)
       RTEMS_PREEMPT|RTEMS_TIMESLICE,
@@ -232,7 +232,6 @@ rtems_task Init(
   );
   status = rtems_task_start( cacheTask_id, PQ_Cache_Task, NUM_TASKS+1 );
 #endif
-
  
   rtems_task_wake_after( 1 );
 
@@ -242,11 +241,6 @@ rtems_task Init(
 
   status = rtems_semaphore_release( tasks_complete_sem );
   directive_failed( status, "rtems_semaphore_release" );
-
-  /* start measurement */
-#ifdef WARMUP
-  asm volatile("break_start_opal:");
-#endif
 
   /* Should block forever */
   status = rtems_semaphore_obtain( final_barrier, RTEMS_DEFAULT_OPTIONS, 0 );
