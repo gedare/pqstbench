@@ -23,11 +23,11 @@ node the_nodes[NUM_NODES][NUM_APERIODIC_TASKS];
 rtems_chain_control freelist[NUM_APERIODIC_TASKS];
 
 node *alloc_node(rtems_task_argument tid) {
-  node *n = rtems_chain_get_unprotected( &freelist[tid] );
+  node *n = (node*)rtems_chain_get_unprotected( &freelist[tid] );
   return n;
 }
 void free_node(rtems_task_argument tid, node *n) {
-  rtems_chain_append_unprotected( &freelist[tid], n );
+  rtems_chain_append_unprotected( &freelist[tid], (rtems_chain_node*)n );
 }
 
 /* BEGIN sptree.c */

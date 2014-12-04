@@ -20,11 +20,11 @@ rtems_chain_control freenodes[NUM_APERIODIC_TASKS];
 
 /* helpers */
 static node *alloc_node(rtems_task_argument tid) {
-  node *n = rtems_chain_get_unprotected( &freenodes[tid] );
+  node *n = (node*)rtems_chain_get_unprotected( &freenodes[tid] );
   return n;
 }
 static void free_node(rtems_task_argument tid, node *n) {
-  rtems_chain_append_unprotected( &freenodes[tid], n );
+  rtems_chain_append_unprotected( &freenodes[tid], &n->link );
 }
 
 static inline void initialize_helper(rtems_task_argument tid, int size)
@@ -34,7 +34,7 @@ static inline void initialize_helper(rtems_task_argument tid, int size)
 
 static inline void insert_helper(rtems_task_argument tid, node *before, node *n)
 {
-  rtems_chain_insert_unprotected(before, n);
+  rtems_chain_insert_unprotected(&before->link, &n->link);
 }
 
 /* Returns node with same key, first key greater, or tail of list */
@@ -56,7 +56,7 @@ static node* search_helper(rtems_task_argument tid, int key)
 }
 
 static inline void extract_helper(rtems_task_argument tid, node *n) {
-  rtems_chain_extract_unprotected(n);
+  rtems_chain_extract_unprotected(&n->link);
   free_node(tid, n);
 }
 
@@ -83,7 +83,7 @@ void list_insert(rtems_task_argument tid, uint64_t kv ) {
   int key = kv_key(kv);
 
   target = search_helper(tid, key);
-  target = rtems_chain_previous(target);
+  target = (node*)rtems_chain_previous(&target->link);
 
   new_node->data.key = kv_key(kv);
   new_node->data.val = kv_value(kv);
@@ -93,7 +93,7 @@ void list_insert(rtems_task_argument tid, uint64_t kv ) {
 uint64_t list_min( rtems_task_argument tid ) {
   node *n;
 
-  n = rtems_chain_first(&the_list[tid]); // unprotected
+  n = (node*)rtems_chain_first(&the_list[tid]); // unprotected
   if (n) {
     return PQ_NODE_TO_KV(&n->data);
   }
@@ -103,7 +103,7 @@ uint64_t list_min( rtems_task_argument tid ) {
 uint64_t list_pop_min( rtems_task_argument tid ) {
   uint64_t kv;
   node *n;
-  n = rtems_chain_get_unprotected(&the_list[tid]);
+  n = (node*)rtems_chain_get_unprotected(&the_list[tid]);
   if (n) {
     kv = PQ_NODE_TO_KV(&n->data);
     free_node(tid, n);
@@ -115,7 +115,7 @@ uint64_t list_pop_min( rtems_task_argument tid ) {
 
 uint64_t list_search( rtems_task_argument tid, int k ) {
   node* n = search_helper(tid, k);
-  if (!rtems_chain_is_tail(&the_list[tid], n)) {
+  if (!rtems_chain_is_tail(&the_list[tid], &n->link)) {
     return PQ_NODE_TO_KV(&n->data);
   }
   return (uint64_t)-1;
@@ -124,7 +124,7 @@ uint64_t list_search( rtems_task_argument tid, int k ) {
 uint64_t list_extract( rtems_task_argument tid, int k ) {
   node* n = search_helper(tid, k);
   uint64_t kv;
-  if (!rtems_chain_is_tail(&the_list[tid], n) && n->data.key == k) {
+  if (!rtems_chain_is_tail(&the_list[tid], &n->link) && n->data.key == k) {
     kv = PQ_NODE_TO_KV(&n->data);
     extract_helper(tid, n);
   } else {

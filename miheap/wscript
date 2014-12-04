@@ -8,7 +8,7 @@ import rtems_waf.rtems as rtems
 def build(bld):
     rtems.build(bld)
 
-    bld.includes = ['.', '../shared', '../../rtems/testsuites/support/include']
+    bld.includes = ['.', '../shared']
 
     bld(features = 'c cprogram',
         target = 'miheap.exe',

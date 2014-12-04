@@ -215,7 +215,7 @@ static bool skiplist_verify(skiplist *sl, int min, int max) {
   return rv;
 }
 
-static inline unsigned uint64_t seed(void) {
+static inline uint64_t seed(void) {
   return 0xdeadbeefUL; // FIXME: randomize
 }
 

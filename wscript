@@ -37,13 +37,13 @@ def build(bld):
     rtems.build(bld)
     bld.env.CFLAGS += ['-O2','-g']
     bld.recurse('miheap')
-#    bld.recurse('msplay')
-#    bld.recurse('mlist')
-#    bld.recurse('mskiplist')
-#    bld.recurse('mrbtree')
-#    
-#    if bld.env['CXX'] is not None:
-#        bld.recurse('mstlheap')
+    bld.recurse('msplay')
+    bld.recurse('mlist')
+    bld.recurse('mskiplist')
+    bld.recurse('mrbtree')
+    
+    if bld.env['CXX'] is not None:
+        bld.recurse('mstlheap')
 
 def rebuild(ctx):
     import waflib.Options
