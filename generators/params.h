@@ -10,7 +10,7 @@
 
 /* [0] duplicate enqueues during work */
 
-/* The maximum priority value during warmup is [99787] */
+/* The maximum priority value during warmup is [99394] */
 
 /* The maximum priority value during work is [0] */
 
