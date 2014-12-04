@@ -16,7 +16,7 @@ def get_model_name(model):
 
 def validate_config(cfglist):
   
-  if len(cfglist) < 8:
+  if len(cfglist) < 11:
     print "Config file not long enough, only found " + str(len(cfglist))
     sys.exit(1)
 
@@ -56,6 +56,10 @@ def validate_config(cfglist):
     print("Invalid repetitions count " + cfglist[7])
     sys.exit(1)
 
+  if not cfglist[8].isdigit():
+    print("Invalid model number " + cfglist[8])
+    sys.exit(1)
+
 
 def parse_config_file(cfgfile):
   ## pqbench is configured for a set of pq implementations, 
@@ -70,7 +74,10 @@ def parse_config_file(cfgfile):
       f.readline().strip(),            # pqstbench directory
       f.readline().strip(),            # pqstbench build
       f.readline().strip().split(','), # workspace directories
-      f.readline().strip()             # number of times to repeat each run
+      f.readline().strip(),            # number of times to repeat each run
+      f.readline().strip(),            # model number parameter
+      f.readline().strip().split(','), # list of \alpha parameters
+      f.readline().strip().split(',')  # list of distribution parameters
       ]
   f.close()
   return retcfg

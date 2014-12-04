@@ -20,13 +20,8 @@ Usage: pqstbenchdriver.py -[hvrc:n:m:t:]\n\
   -v --verbose        print more\n\
   -r --rerun          run tests again\n\
   -c --config=        config file\n\
-  -n --name=          test name\n\
-  -m --model=         specify access pattern model, one of:\n\
-                        1. Classic Hold\n\
-                        2. Markov Hold\n\
-                        3. Up/Down\n\
-                        4. Search\n\
-  -t --tasks=         number of tasks\n\
+  -n --name=          test name [noname]\n\
+  -t --tasks=         number of tasks [1]\n\
 "
 
 def main():
@@ -86,6 +81,9 @@ def main():
   pqstbench_build = configs[5]
   wkspace_directories = configs[6]
   repetitions = configs[7]
+  model = configs[8]
+  a_list = configs[9]
+  d_list = configs[10]
 
   pwd = os.system("pwd")
 
@@ -121,20 +119,20 @@ def main():
       os.system("cp " + wkspace_dir + "/run.sh " + name + "/" +
               os.path.basename(wkspace_dir) + "_run.sh")
 
-  ## FIXME: these should come from the config.
-  a_list = ["0.0"]
-  #d_list = ["1","3","4"]
-  d_list = ["1","2","3","4"]
-  #d_list = ["1"]
-  if model == "2": #markov
-    d_list = ["1"]
-    a_list = ["0.5_0.5","0.3_0.7","0.8_0.8","0.0_0.0"]
-  if model == "4": #search
-    #d_list = ["1","2","3","4"]
-    d_list = ["1","4"]
-    #a_list = ["0.0","0.516","0.687","0.892","0.975","1.058","1.257","1.420"]
-    #a_list = ["0.0","0.516","1.058","1.420"]
-    a_list = ["0.0","1.420"]
+#  ## these come from the config.
+#  a_list = ["0.0"]
+#  #d_list = ["1","3","4"]
+#  d_list = ["1","2","3","4"]
+#  #d_list = ["1"]
+#  if model == "2": #markov
+#    d_list = ["1"]
+#    a_list = ["0.5_0.5","0.3_0.7","0.8_0.8","0.0_0.0"]
+#  if model == "4": #search
+#    #d_list = ["1","2","3","4"]
+#    d_list = ["1","4"]
+#    #a_list = ["0.0","0.516","0.687","0.892","0.975","1.058","1.257","1.420"]
+#    #a_list = ["0.0","0.516","1.058","1.420"]
+#    a_list = ["0.0","1.420"]
 
   for a in a_list:
     os.system("mkdir " + name + "/" + a);
