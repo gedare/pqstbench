@@ -635,11 +635,6 @@ def print_params_headers(header, tasks, g_warmup_dupes,  g_work_dupes,  g_warmup
   for t in range(int(tasks)):
     f.write('          200*1*CONFIGURE_MICROSECONDS_PER_TICK,\n')
   f.write('};\n')
-  f.write('spillpq_policy_t pqbench_policy[NUM_TASKS] = {\n')
-  for t in range(int(tasks)):
-    f.write('  {false,false,false,0,0,0},\n')
-  f.write('};\n')
-  f.write('\n')
   f.close()
   print "tasks.i written"
 
