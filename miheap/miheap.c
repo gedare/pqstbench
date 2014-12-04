@@ -11,6 +11,8 @@
 
 #include "../shared/params.h"
 
+const char rtems_test_name[] = "PQST BENCHMARK IMPLICIT HEAP";
+
 static node* the_heap[NUM_NODES+1][NUM_APERIODIC_TASKS];
 static int heap_current_size[NUM_APERIODIC_TASKS];
 

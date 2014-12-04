@@ -11,6 +11,8 @@
 #include <rtems/chain.h>
 #include "../shared/params.h"
 
+const char rtems_test_name[] = "PQST BENCHMARK LIST";
+
 /* data structure */
 static rtems_chain_control the_list[NUM_APERIODIC_TASKS];
 /* data */

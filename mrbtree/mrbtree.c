@@ -8,6 +8,8 @@
 
 #include <stdlib.h>
 
+const char rtems_test_name[] = "PQST BENCHMARK RED-BLACK TREE";
+
 node the_nodes[NUM_NODES][NUM_APERIODIC_TASKS];
 rtems_rbtree_control the_rbtree[NUM_APERIODIC_TASKS];
 rtems_chain_control freelist[NUM_APERIODIC_TASKS];
@@ -32,7 +34,7 @@ static rtems_rbtree_compare_result rbtree_compare(
 
 static void print_node( rtems_rbtree_node* n )
 {
-  printf("%X\t%X\t%X\t%X\t%d\n",
+  printk("%X\t%X\t%X\t%X\t%d\n",
       n, n->parent, n->child[0], n->child[1], n->color);
 }
 
@@ -60,7 +62,7 @@ static int rb_assert ( rtems_rbtree_node *root )
     if ( !rtems_rbtree_parent(root) ) {
       int bh = _RBTree_Get_black_height(root->parent);
       if ( lh != -1 && lh != bh ) {
-        printf ( "Tree black height violation: %d != %d\n", lh, bh );
+        printk ( "Tree black height violation: %d != %d\n", lh, bh );
         return -1;
       }
     }

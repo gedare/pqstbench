@@ -32,9 +32,10 @@
 #include <rtems/confdefs.h>
 
 #include <rtems.h>
+#include <rtems/counter.h>
 
+#define TESTS_USE_PRINTK
 #include <tmacros.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 #include "workload.h"
@@ -47,11 +48,13 @@ static rtems_id  final_barrier;
 rtems_id   Task_id[ 1+NUM_TASKS ];
 rtems_name Task_name[ 1+NUM_TASKS ];
 
+extern const char rtems_test_name[];
+
 rtems_task PQ_Cache_Task(rtems_task_argument argument)
 {
   int *p, x;
   rtems_status_code status;
-  printf("CT01\n");
+  printk("CT01\n");
 
   x = 0;
   p = 0;
@@ -62,7 +65,7 @@ rtems_task PQ_Cache_Task(rtems_task_argument argument)
     x += *p;
     p += 4;
     if ( x == -1 ) {
-      printf("Killing cache task!\n");
+      printk("Killing cache task!\n");
       status = rtems_task_delete(RTEMS_SELF); /* probably unreached... */
       directive_failed(status, "rtems_task_delete of RTEMS_SELF");
       return (rtems_task)x; /* unreached */
@@ -74,8 +77,6 @@ rtems_task PQ_Periodic_Task(rtems_task_argument argument)
 {
   rtems_id          rmid;
   rtems_status_code status;
-
-  put_name( Task_name[ argument ], 1 );
 
   status = rtems_rate_monotonic_create( argument, &rmid );
   directive_failed( status, "rtems_rate_monotonic_create" );
@@ -95,7 +96,7 @@ rtems_task PQ_Periodic_Task(rtems_task_argument argument)
   status = rtems_semaphore_obtain( final_barrier, RTEMS_DEFAULT_OPTIONS, 0 );
   directive_failed( status, "rtems_semaphore_obtain" );
 
-  printf( "Killing task %d\n", argument);
+  printk( "Killing task %d\n", argument);
   status = rtems_task_delete(RTEMS_SELF);
   directive_failed(status, "rtems_task_delete of RTEMS_SELF");
 }
@@ -104,8 +105,11 @@ rtems_task PQ_Workload_Task(rtems_task_argument argument)
 {
   int               index;
   rtems_status_code status;
-
-  put_name( Task_name[ argument ], 1 );
+  rtems_counter_ticks start;
+  rtems_counter_ticks middle;
+  rtems_counter_ticks end;
+  rtems_counter_ticks d_warmup;
+  rtems_counter_ticks d_work;
 
   /* initialize PQ structures */
   initialize(argument - 1);
@@ -115,23 +119,33 @@ rtems_task PQ_Workload_Task(rtems_task_argument argument)
   /* Barrier: tasks will be released by the init function */
   status = rtems_semaphore_obtain(tasks_complete_sem, RTEMS_DEFAULT_OPTIONS, 0);
 
-  // FIXME: insert timer call pre-warmup
+  start = rtems_counter_read();
   
   /* reach PQ steady state */
   warmup(argument - 1);
-  
-  // FIXME: insert timer call post-warmup, pre-work
+
+  middle = rtems_counter_read();
 
   /* workload */
   work(argument - 1);
   
-  // FIXME: insert timer call post-work
+  end = rtems_counter_read();
+
+  d_warmup = rtems_counter_difference(middle, start);
+  d_work = rtems_counter_difference(end, middle);
+
+  printk(
+      "%d\t%" PRIu64 "\t%" PRIu64"\n",
+      argument,
+      rtems_counter_ticks_to_nanoseconds(d_warmup),
+      rtems_counter_ticks_to_nanoseconds(d_work)
+  );
 
   status = rtems_semaphore_obtain(tasks_complete_sem, RTEMS_DEFAULT_OPTIONS, 0);
   directive_failed( status, "rtems_semaphore_obtain" );
     tasks_completed++;
     if (NUM_APERIODIC_TASKS == tasks_completed) {
-      puts( "*** END OF TEST ***" );
+      TEST_END();
       rtems_test_exit(0);
     }
   status = rtems_semaphore_release( tasks_complete_sem );
@@ -142,7 +156,7 @@ rtems_task PQ_Workload_Task(rtems_task_argument argument)
   directive_failed( status, "rtems_semaphore_obtain" );
 
   /* shouldn't reach this */
-  printf( "Killing task %d", argument);
+  printk( "Killing task %d", argument);
   status = rtems_task_delete(RTEMS_SELF);
   directive_failed(status, "rtems_task_delete of RTEMS_SELF");
 }
@@ -162,6 +176,7 @@ rtems_task Init(
   cacheTask_name = rtems_build_name( 'C', 'T', '0', '1' );
 #endif
 
+  TEST_BEGIN();
 
   if ( NUM_APERIODIC_TASKS == 0 ) {
     puts("error: Need at least 1 aperiodic task to ensure termination");

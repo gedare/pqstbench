@@ -17,6 +17,8 @@
 #define assert(x) { ; }
 #endif
 
+const char rtems_test_name[] = "PQST BENCHMARK SPLAY TREE";
+
 static splay_tree the_tree[NUM_APERIODIC_TASKS];
 
 node the_nodes[NUM_NODES][NUM_APERIODIC_TASKS];

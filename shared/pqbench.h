@@ -15,7 +15,8 @@ extern "C" {
 #define GAB_CHECK
 
 #if defined(GAB_PRINT) || defined(GAB_DEBUG) || defined(GAB_CHECK)
-#include <stdio.h>
+#define TESTS_USE_PRINTK
+#include <tmacros.h>
 #endif
 #include <rtems.h>
 #include "rtems/rtems/types.h"

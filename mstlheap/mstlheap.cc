@@ -6,6 +6,8 @@
 
 #include "mstlheap.h"
 
+const char rtems_test_name[] = "PQST BENCHMARK STL HEAP";
+
 uint64_t pq_t::first() {
   pq_node_t *n = m_pq.front();
   return PQ_NODE_TO_KV(n);

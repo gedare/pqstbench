@@ -6,10 +6,11 @@
 
 #include "mskiplist.h"
 
-#include <stdlib.h>
 #include <tmacros.h>
 #include <rtems/chain.h>
 #include "../shared/params.h"
+
+const char rtems_test_name[] = "PQST BENCHMARK SKIP LIST";
 
 /* data structure */
 static skiplist the_skiplist[NUM_APERIODIC_TASKS];
@@ -29,7 +30,7 @@ static void free_node(rtems_task_argument tid, node *n) {
 
 static void print_skiplist_node(rtems_chain_node *n, int index)
 {
-  printf("%d-", LINK_TO_NODE(n, index)->data.key);
+  printk("%d-", LINK_TO_NODE(n, index)->data.key);
   return;
 }
 
@@ -42,7 +43,7 @@ static void print_skiplist_list(
   rtems_chain_node *n;
   rtems_chain_node *iter;
  
-  printf("%d::-", index);
+  printk("%d::-", index);
   if ( rtems_chain_is_empty(list) ) {
     return;
   }
@@ -52,13 +53,13 @@ static void print_skiplist_list(
   while ( !rtems_chain_is_tail(list, n) ) {
     while ( LINK_TO_NODE(n,index) != LINK_TO_NODE(iter,0) ) {
       iter = rtems_chain_next(iter);
-      printf("xxxx-");
+      printk("xxxx-");
     }
     print_skiplist_node(n, index);
     n = rtems_chain_next(n);
     iter = rtems_chain_next(iter);
   }
-  printf("x\n");
+  printk("x\n");
 }
 
 static void print_skiplist( skiplist *sl ) {
@@ -67,7 +68,7 @@ static void print_skiplist( skiplist *sl ) {
   for ( i = sl->level; i >= 0; i-- ) {
     print_skiplist_list(&sl->lists[i], i, &sl->lists[0]);
   }
-  printf("\n");
+  printk("\n");
 }
 
 static bool skiplist_verify(skiplist *sl, int min, int max) {
@@ -206,11 +207,11 @@ static bool skiplist_verify(skiplist *sl, int min, int max) {
   }
 
   if ( !rv ) {
-    printf("Gaps: ");
+    printk("Gaps: ");
     for ( i = 0; i < 9; i++ ) {
-      printf("%d ",count_gaps[i]);
+      printk("%d ",count_gaps[i]);
     }
-    printf("%d\n", count_gaps[9]);
+    printk("%d\n", count_gaps[9]);
   }
   return rv;
 }
@@ -248,7 +249,7 @@ static void initialize_helper(rtems_task_argument tid, int size) {
   // FIXME: MAXLEVEL
   sl->lists = malloc(sizeof(rtems_chain_control)*(MAXLEVEL+1));
   if ( !sl->lists ) {
-    printf("Failed to allocate list headers\n");
+    printk("Failed to allocate list headers\n");
     while(1);
   }
   for ( i = 0; i <= MAXLEVEL; i++ ) {
