@@ -8,15 +8,12 @@ import rtems_waf.rtems as rtems
 def build(bld):
     rtems.build(bld)
 
-    cflags = bld.get_env()['CFLAGS']
-
     bld.includes = ['.', '../shared']
-    bld.shared_sources = '../shared/init.c ../shared/workload.c',
+    bld.shared_sources = ['../shared/init.c','../shared/workload.c'],
 
     bld(features = 'c cprogram',
         target = 'msplay.exe',
-	includes = bld.includes,
-	cflags = cflags,
-        source = bld.shared_sources + 'pqbench.c msplay.c')
+        includes = bld.includes,
+        source = bld.shared_sources.extend(['pqbench.c', 'msplay.c']))
 
 

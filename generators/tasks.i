@@ -20,10 +20,4 @@ uint32_t  Execution_us[1+NUM_TASKS] = {
           200*1*CONFIGURE_MICROSECONDS_PER_TICK,
           200*1*CONFIGURE_MICROSECONDS_PER_TICK,
 };
-spillpq_policy_t pqbench_policy[NUM_TASKS] = {
-  {false,false,false,0,0,0},
-  {false,false,false,0,0,0},
-  {false,false,false,0,0,0},
-  {false,false,false,0,0,0},
-};
 
