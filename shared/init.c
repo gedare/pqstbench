@@ -14,7 +14,7 @@
 //#define CACHE_TASK
 
 #include "params.h"
-#define CONFIGURE_MAXIMUM_SEMAPHORES        2
+#define CONFIGURE_MAXIMUM_SEMAPHORES        5
 #if defined(CACHE_TASK)
   #define CONFIGURE_MAXIMUM_TASKS               (2+NUM_TASKS)
 #else
