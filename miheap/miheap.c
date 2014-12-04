@@ -18,11 +18,11 @@ static node* the_nodes[NUM_APERIODIC_TASKS];
 rtems_chain_control freelist[NUM_APERIODIC_TASKS];
 
 static node *alloc_node(rtems_task_argument tid) {
-  node *n = rtems_chain_get_unprotected( &freelist[tid] );
+  node *n = (node*)rtems_chain_get_unprotected( &freelist[tid] );
   return n;
 }
 static void free_node(rtems_task_argument tid, node *n) {
-  rtems_chain_append_unprotected( &freelist[tid], n );
+  rtems_chain_append_unprotected( &freelist[tid], (rtems_chain_node*)n );
 }
 
 static inline void swap_entries(rtems_task_argument tid, int a, int b) {
@@ -75,7 +75,7 @@ void heap_initialize( rtems_task_argument tid, int size ) {
   }
 }
 
-void heap_insert(rtems_task_argument tid, long kv ) {
+void heap_insert(rtems_task_argument tid, uint64_t kv ) {
   node *n = alloc_node(tid);
   n->key = kv_key(kv);
   n->val = kv_value(kv);
@@ -110,35 +110,35 @@ void heap_increase_key( rtems_task_argument tid, int i, int k ) {
   bubble_down(tid,i);
 }
 
-long heap_min( rtems_task_argument tid ) {
+uint64_t heap_min( rtems_task_argument tid ) {
   if (heap_current_size[tid]) {
     return (HEAP_NODE_TO_KV(the_heap[1][tid]));
   }
-  return (long)-1; // FIXME: error handling
+  return (uint64_t)-1; // FIXME: error handling
 }
 
-long heap_pop_min( rtems_task_argument tid ) {
-  long kv;
+uint64_t heap_pop_min( rtems_task_argument tid ) {
+  uint64_t kv;
   kv = heap_min(tid);
-  if ( kv != (long)-1 )
+  if ( kv != (uint64_t)-1 )
     heap_remove(tid,1);
   return kv;
 }
 
-long heap_search( rtems_task_argument tid, int k ) {
+uint64_t heap_search( rtems_task_argument tid, int k ) {
   int i;
   for ( i = 1; i <= heap_current_size[tid]; i++ ) {
     if ( the_heap[i][tid]->key == k ) {
       return (HEAP_NODE_TO_KV(the_heap[i][tid]));
     }
   }
-  return (long)-1;
+  return (uint64_t)-1;
 }
 
 /* this can be a lot more efficient if the heap node is known/passed */
-long heap_extract( rtems_task_argument tid, int k ) {
+uint64_t heap_extract( rtems_task_argument tid, int k ) {
   int i;
-  long kv;
+  uint64_t kv;
   for ( i = 1; i <= heap_current_size[tid]; i++ ) {
     if ( the_heap[i][tid]->key == k ) {
       kv = HEAP_NODE_TO_KV(the_heap[i][tid]);
@@ -146,6 +146,6 @@ long heap_extract( rtems_task_argument tid, int k ) {
       return kv;
     }
   }
-  return (long)-1;
+  return (uint64_t)-1;
 }
 

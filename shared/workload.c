@@ -14,18 +14,18 @@
 
 #include <stdlib.h>
 
-#define ARG_TO_LONG(n) ((((long)n->key) << (sizeof(long)*4L)) | (long)n->val)
+#define ARG_TO_LONG(n) ((((uint64_t)n->key) << (sizeof(uint64_t)*4L)) | (uint64_t)n->val)
 
-inline long pq_add_to_key(long p, uint32_t i) {
-  return p+((long)i<<(sizeof(long)*4L));
+inline uint64_t pq_add_to_key(uint64_t p, uint32_t i) {
+  return p+((uint64_t)i<<(sizeof(uint64_t)*4L));
 }
 
-inline long pq_node_initialize( PQ_arg *a ) {
+inline uint64_t pq_node_initialize( PQ_arg *a ) {
   return ARG_TO_LONG(a);
 }
 
 #if defined(GAB_PRINT) || defined(GAB_DEBUG)
-inline void pq_print_node( long p ) {
+inline void pq_print_node( uint64_t p ) {
   printf("%d\t%d\n", kv_key(p), kv_value(p));
 }
 #endif
@@ -65,7 +65,7 @@ void work( rtems_task_argument tid  ) {
 }
 
 static int execute( rtems_task_argument tid, int current_op ) {
-  long n;
+  uint64_t n;
 
   switch (ops[tid][current_op]) {
     case f:
@@ -160,10 +160,10 @@ static int execute( rtems_task_argument tid, int current_op ) {
 }
 
 static void drain_and_check(rtems_task_argument tid) {
-  long s = 0;
+  uint64_t s = 0;
 
-  long n;
-  while ((n = pq_pop(tid)) != (long)-1) { // FIXME: casting -1 :(
+  uint64_t n;
+  while ((n = pq_pop(tid)) != (uint64_t)-1) { // FIXME: casting -1 :(
     s = s + kv_key(n);
   }
   printf("%d\tChecksum: 0x%llX\n", tid, s);

@@ -17,7 +17,7 @@
 #include <algorithm>
 #include <vector>
 
-#define PQ_NODE_TO_KV(n) ((((long)n->key) << 32UL) | (long)n->val)
+#define PQ_NODE_TO_KV(n) ((((uint64_t)n->key) << 32UL) | (uint64_t)n->val)
 
 class pq_node_t {
   public:
@@ -26,7 +26,7 @@ class pq_node_t {
       this->val = val;
     }
     
-    pq_node_t(long kv) {
+    pq_node_t(uint64_t kv) {
       this->key = kv_key(kv);
       this->val = kv_value(kv);
     }
@@ -42,12 +42,12 @@ class pq_t {
 
     ~pq_t() { ; }
 
-    long first();
-    long pop();
+    uint64_t first();
+    uint64_t pop();
 
-    void insert(long kv);
-    long search( int key );
-    long extract( int key );
+    void insert(uint64_t kv);
+    uint64_t search( int key );
+    uint64_t extract( int key );
 
     class pq_node_min_compare {
       public:

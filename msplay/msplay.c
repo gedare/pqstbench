@@ -91,7 +91,7 @@ static int spempty( splay_tree *q )
  *  in q with keys less than or equal to that of n will be in the
  *  left subtree, all with greater keys will be in the right subtree;
  *  the tree is split into these subtrees from the top down, with rotations
- *  performed along the way to shorten the left branch of the right subtree
+ *  performed auint64_t the way to shorten the left branch of the right subtree
  *  and the right branch of the left subtree
  */
 static splay_tree_node * spenq( splay_tree_node *n, splay_tree *q )
@@ -312,7 +312,7 @@ static splay_tree_node *spdeq( splay_tree_node **np )
  *  done, n will be the root of the splay tree representing q, all nodes in
  *  q with keys less than that of n will be in the left subtree, all with
  *  greater or equal keys will be in the right subtree; the tree is split
- *  into these subtrees from the top down, with rotations performed along
+ *  into these subtrees from the top down, with rotations performed auint64_t
  *  the way to shorten the left branch of the right subtree and the right
  *  branch of the left subtree; the logic of spenqprior is exactly the
  *  same as that of spenq except for a substitution of comparison
@@ -660,7 +660,7 @@ void splay_initialize(rtems_task_argument tid, int size ) {
   the_tree[tid].root = NULL;
 }
 
-void splay_insert( rtems_task_argument tid, long kv ) {
+void splay_insert( rtems_task_argument tid, uint64_t kv ) {
   node *n = alloc_node(tid);
   pq_node *pn = &n->data;
   pn->key = kv_key(kv);
@@ -669,8 +669,8 @@ void splay_insert( rtems_task_argument tid, long kv ) {
   spenq( &n->st_node, &the_tree[tid] );
 }
 
-long splay_min(rtems_task_argument tid ) {
-  long kv;
+uint64_t splay_min(rtems_task_argument tid ) {
+  uint64_t kv;
   splay_tree_node *stn;
   node *n;
   pq_node *p;
@@ -693,11 +693,11 @@ long splay_min(rtems_task_argument tid ) {
     kv = PQ_NODE_TO_KV(p);
     return kv;
   } 
-  return (long)-1; // FIXME: error handling
+  return (uint64_t)-1; // FIXME: error handling
 }
 
-long splay_pop_min( rtems_task_argument tid) {
-  long kv;
+uint64_t splay_pop_min( rtems_task_argument tid) {
+  uint64_t kv;
   node *n;
   pq_node *p;
   splay_tree_node *stn;
@@ -711,13 +711,13 @@ long splay_pop_min( rtems_task_argument tid) {
     kv = PQ_NODE_TO_KV(p);
     free_node(tid,n);
   } else {
-    kv = (long)-1;
+    kv = (uint64_t)-1;
   }
   return kv;
 }
 
-long splay_search( rtems_task_argument tid, int k) {
-  long kv;
+uint64_t splay_search( rtems_task_argument tid, int k) {
+  uint64_t kv;
   splay_tree_node *stn;
   splay_tree *tree;
   node *n;
@@ -730,13 +730,13 @@ long splay_search( rtems_task_argument tid, int k) {
     assert(p->key == stn->key);
     kv = PQ_NODE_TO_KV(p);
   } else {
-    kv = (long)-1;
+    kv = (uint64_t)-1;
   }
   return kv;
 }
 
-long splay_extract( rtems_task_argument tid, int k) {
-  long kv;
+uint64_t splay_extract( rtems_task_argument tid, int k) {
+  uint64_t kv;
   splay_tree_node *stn;
   splay_tree *tree;
   node *n;
@@ -751,7 +751,7 @@ long splay_extract( rtems_task_argument tid, int k) {
     kv = PQ_NODE_TO_KV(p);
     free_node(tid, n);
   } else {
-    kv = (long)-1;
+    kv = (uint64_t)-1;
   }
   return kv;
 }
