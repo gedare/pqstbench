@@ -47,9 +47,10 @@ def validate_config(cfglist):
     print("Invalid path to pqstbench_build: " + cfglist[5])
     sys.exit(1)
 
-  if not os.path.exists(cfglist[6]):
-    print("Invalid path to workspace: " + cfglist[6])
-    sys.exit(1)
+  for d in cfglist[6]:
+    if not os.path.exists(d):
+      print("Invalid path to workspace: " + d)
+      sys.exit(1)
 
   if not cfglist[7].isdigit():
     print("Invalid repetitions count " + cfglist[7])
@@ -68,7 +69,7 @@ def parse_config_file(cfgfile):
       f.readline().strip(),            # ops
       f.readline().strip(),            # pqstbench directory
       f.readline().strip(),            # pqstbench build
-      f.readline().strip(),            # workspace directory
+      f.readline().strip().split(','), # workspace directories
       f.readline().strip()             # number of times to repeat each run
       ]
   f.close()

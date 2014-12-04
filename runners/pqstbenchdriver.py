@@ -15,7 +15,7 @@ import config_helpers
 
 def usage():
   print "\
-Usage: pqbenchdriver.py -[hvrc:n:m:t:]\n\
+Usage: pqstbenchdriver.py -[hvrc:n:m:t:]\n\
   -h --help           print this help\n\
   -v --verbose        print more\n\
   -r --rerun          run tests again\n\
@@ -84,7 +84,7 @@ def main():
   ops = configs[3]
   pqstbench_dir = configs[4]
   pqstbench_build = configs[5]
-  wkspace_dir = configs[6]
+  wkspace_directories = configs[6]
   repetitions = configs[7]
 
   pwd = os.system("pwd")
@@ -115,9 +115,11 @@ def main():
 
     # archive some files
     os.system("cp " + cfgfile + " " + name)
-    os.system("cp pqbenchdriver.py " + name)
+    os.system("cp pqstbenchdriver.py " + name)
     os.system("cp " + pqstbench_dir + "/generators/genparams.py " + name)
-    os.system("cp " + wkspace_dir + "/*.sh " + name)
+    for wkspace_dir in wkspace_directories:
+      os.system("cp " + wkspace_dir + "/run.sh " + name + "/" +
+              os.path.basename(wkspace_dir) + "_run.sh")
 
   ## FIXME: these should come from the config.
   a_list = ["0.0"]
@@ -139,6 +141,12 @@ def main():
     if not os.path.exists(name + "/" + a):
       print("Unable to find output directory: " + name + "/" + a)
       sys.exit(1)
+    for wkspace_dir in wkspace_directories:
+      w = os.path.basename(wkspace_dir)
+      os.system("mkdir " + name + "/" + a + "/" + w)
+      if not os.path.exists(name + "/" + a + "/" + w):
+        print("Unable to create directory: " + name + "/" + a + "/" + w)
+        sys.exit(1)
 
   for s in sizes:
     for a in a_list:
@@ -185,18 +193,20 @@ def main():
           os.system("cd " + pqstbench_dir + " && waf")
 
           # run
-          for imp in imps:
-            os.system("cp " + os.path.join(pqstbench_build,
-                os.path.join(imp, imp + ".exe")) +
-                " " + os.path.join(wkspace_dir, imp + ".exe"))
-            os.system("cd " + wkspace_dir + " && ./run.sh " + imp + ".exe")
-
-            if (not rerun):
-              os.system("mv " + wkspace_dir + "/output.txt " +
-                  name + "/" + a + "/" + imp + tag + ".txt")
-            else:
-              os.system("mv " + wkspace_dir + "/output.txt " + name +
-                  "/" + a + "/" + imp + tag + "_rerun.txt")
+          for wkspace_dir in wkspace_directories:
+            w = os.path.basename(wkspace_dir)
+            for imp in imps:
+              os.system("cp " + os.path.join(pqstbench_build,
+                  os.path.join(imp, imp + ".exe")) +
+                  " " + os.path.join(wkspace_dir, imp + ".exe"))
+              os.system("cd " + wkspace_dir + " && ./run.sh " + imp + ".exe")
+  
+              if (not rerun):
+                os.system("mv " + wkspace_dir + "/output.txt " +
+                    name + "/" + a + "/" + w + "/" + imp + tag + ".txt")
+              else:
+                os.system("mv " + wkspace_dir + "/output.txt " + name +
+                    "/" + a + "/" + w + "/" + imp + tag + "_rerun.txt")
 
 if __name__ == "__main__":
   main()
