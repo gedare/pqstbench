@@ -13,28 +13,27 @@ rtems_rbtree_control the_rbtree[NUM_APERIODIC_TASKS];
 rtems_chain_control freelist[NUM_APERIODIC_TASKS];
 
 node *alloc_node(rtems_task_argument tid) {
-  node *n = rtems_chain_get_unprotected( &freelist[tid] );
+  node *n = (node*)rtems_chain_get_unprotected( &freelist[tid] );
   return n;
 }
 void free_node(rtems_task_argument tid, node *n) {
-  rtems_chain_append_unprotected( &freelist[tid], n );
+  rtems_chain_append_unprotected( &freelist[tid], (rtems_chain_node*)n );
 }
 
-static int rbtree_compare(
-  rtems_rbtree_node* n1,
-  rtems_rbtree_node* n2
+static rtems_rbtree_compare_result rbtree_compare(
+  const rtems_rbtree_node* n1,
+  const rtems_rbtree_node* n2
 ) {
-  int key1 = rtems_rbtree_container_of( n1, node, rbt_node )->data.key; 
-  int key2 = rtems_rbtree_container_of( n2, node, rbt_node )->data.key;
+  int key1 = RTEMS_CONTAINER_OF( n1, node, rbt_node )->data.key; 
+  int key2 = RTEMS_CONTAINER_OF( n2, node, rbt_node )->data.key;
 
   return key1 - key2;
 }
 
-#define USE_RB_ASSERT
 static void print_node( rtems_rbtree_node* n )
 {
   printf("%X\t%X\t%X\t%X\t%d\n",
-      n, n->parent, n->child[0], n->child[1], n->attributes);
+      n, n->parent, n->child[0], n->child[1], n->color);
 }
 
 static int rb_assert ( rtems_rbtree_node *root )
@@ -181,9 +180,7 @@ void rbtree_initialize( rtems_task_argument tid, int size ) {
   }
 
   rtems_rbtree_initialize_empty(
-      &the_rbtree[tid],
-      &rbtree_compare,
-      false
+      &the_rbtree[tid]
   );
 
 #if 0
@@ -201,7 +198,7 @@ void rbtree_insert( rtems_task_argument tid,  uint64_t kv ) {
   pq_node *pn = &n->data;
   pn->key = kv_key(kv);
   pn->val = kv_value(kv);
-  rtems_rbtree_insert_unprotected( &the_rbtree[tid], &n->rbt_node );
+  rtems_rbtree_insert( &the_rbtree[tid], &n->rbt_node, &rbtree_compare, false );
 #if defined(USE_RB_ASSERT)
   rb_assert(the_rbtree[tid].root);
 #endif
@@ -216,7 +213,7 @@ uint64_t rbtree_min( rtems_task_argument tid ) {
   rn = rtems_rbtree_min(&the_rbtree[tid]);
 
   if ( rn ) {
-    n = rtems_rbtree_container_of(rn, node, rbt_node);
+    n = RTEMS_CONTAINER_OF(rn, node, rbt_node);
     p = &n->data;
     kv = PQ_NODE_TO_KV(p);
     return kv;
@@ -230,10 +227,10 @@ uint64_t rbtree_pop_min( rtems_task_argument tid ) {
   node *n;
   pq_node *p;
 
-  rn = rtems_rbtree_get_min_unprotected(&the_rbtree[tid]);
+  rn = rtems_rbtree_get_min(&the_rbtree[tid]);
 
   if ( rn ) {
-    n = rtems_rbtree_container_of(rn, node, rbt_node);
+    n = RTEMS_CONTAINER_OF(rn, node, rbt_node);
     p = &n->data;
     kv = PQ_NODE_TO_KV(p);
     free_node(tid, n);
@@ -257,9 +254,9 @@ uint64_t rbtree_search( rtems_task_argument tid, int k )
 
   search_node.data.key = k;
 
-  rn = rtems_rbtree_find_unprotected(&the_rbtree[tid], &search_node.rbt_node);
+  rn = rtems_rbtree_find(&the_rbtree[tid], &search_node.rbt_node, &rbtree_compare, false);
   if ( rn ) {
-    n = rtems_rbtree_container_of(rn, node, rbt_node);
+    n = RTEMS_CONTAINER_OF(rn, node, rbt_node);
     p = &n->data;
     kv = PQ_NODE_TO_KV(p);
   } else {
@@ -279,10 +276,10 @@ uint64_t rbtree_extract( rtems_task_argument tid, int k )
 
   search_node.data.key = k;
 
-  rn = rtems_rbtree_find_unprotected(&the_rbtree[tid], &search_node.rbt_node);
+  rn = rtems_rbtree_find(&the_rbtree[tid], &search_node.rbt_node, &rbtree_compare, false);
   if ( rn ) {
-    rtems_rbtree_extract_unprotected(&the_rbtree[tid], rn);
-    n = rtems_rbtree_container_of(rn, node, rbt_node);
+    rtems_rbtree_extract(&the_rbtree[tid], rn);
+    n = RTEMS_CONTAINER_OF(rn, node, rbt_node);
     p = &n->data;
     kv = PQ_NODE_TO_KV(p);
     free_node(tid, n);
